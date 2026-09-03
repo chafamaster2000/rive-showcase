@@ -16,7 +16,7 @@ onPointerMove={(e) => {
 <input type="password" onFocus={() => mascot.set('coverEyes', true)} />
 
 mascot.fire(ok ? 'success' : 'fail');            // React -> Rive trigger
-mascot.on('laughed', 'trigger', () => count++);  // Rive -> React trigger`;
+mascot.set('scroll', scrollProgress);             // 0..1, every scroll event`;
 
 export function Mascot() {
   const mascot = useRivePiece('mascot');
@@ -24,7 +24,7 @@ export function Mascot() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [result, setResult] = useState<'idle' | 'ok' | 'fail' | 'busy'>('idle');
-  const [laughs, setLaughs] = useState(0);
+  const [pokes, setPokes] = useState(0);
 
   // Cursor relative to the character, anywhere on the section.
   const onMove = useCallback(
@@ -49,7 +49,6 @@ export function Mascot() {
     return () => window.removeEventListener('scroll', onScroll);
   }, [mascot]);
 
-  useEffect(() => mascot.on('laughed', 'trigger', () => setLaughs((n) => n + 1)), [mascot]);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -73,12 +72,15 @@ export function Mascot() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          onClick={() => mascot.fire('poke')}
+          onClick={() => {
+            mascot.fire('poke');
+            setPokes((n) => n + 1);
+          }}
           onPointerEnter={hoverOn}
           onPointerLeave={hoverOff}
         >
           <RivePiece piece={mascot} />
-          {laughs > 0 && <span className="badge">laughed {laughs}×</span>}
+          {pokes > 0 && <span className="badge">poked {pokes}×</span>}
         </motion.div>
 
         <motion.form

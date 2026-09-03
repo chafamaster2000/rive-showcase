@@ -16,6 +16,19 @@ export type PieceValue = number | boolean | string;
 export type PieceValues = Record<string, PieceValue>;
 
 const STATE_MACHINE = 'SM';
+const FILE = 'showcase.riv';
+
+// One .riv holds every artboard, the way a Rive file is normally organised, so
+// the runtime downloads and parses it once for the whole page. A piece whose
+// artboard is not in the file yet renders its placeholder instead.
+let filePromise: Promise<ArrayBuffer | null> | null = null;
+function loadFile(url: string) {
+  filePromise ??= fetch(url)
+    .then((r) => (r.ok && !r.headers.get('content-type')?.includes('text/html') ? r.arrayBuffer() : null))
+    .then((b) => (b && b.byteLength > 0 ? b : null))
+    .catch(() => null);
+  return filePromise;
+}
 
 /**
  * Loads `public/rive/<file>.riv` and exposes its View Model properties.
@@ -23,7 +36,8 @@ const STATE_MACHINE = 'SM';
  * flow into `values` so the placeholder can render them.
  */
 export function useRivePiece(file: string, opts: { fit?: Fit } = {}) {
-  const url = `${import.meta.env.BASE_URL}rive/${file}.riv`;
+  const url = `${import.meta.env.BASE_URL}rive/${FILE}`;
+  const artboard = file.charAt(0).toUpperCase() + file.slice(1);
   const [buffer, setBuffer] = useState<ArrayBuffer | null>(null);
   const [status, setStatus] = useState<PieceStatus>('loading');
   const [vmi, setVmi] = useState<ViewModelInstance | null>(null);
@@ -32,14 +46,11 @@ export function useRivePiece(file: string, opts: { fit?: Fit } = {}) {
 
   useEffect(() => {
     let alive = true;
-    fetch(url)
-      .then((r) => (r.ok && !r.headers.get('content-type')?.includes('text/html') ? r.arrayBuffer() : null))
-      .then((b) => {
-        if (!alive) return;
-        if (b && b.byteLength > 0) setBuffer(b);
-        else setStatus('missing');
-      })
-      .catch(() => alive && setStatus('missing'));
+    loadFile(url).then((b) => {
+      if (!alive) return;
+      if (b) setBuffer(b);
+      else setStatus('missing');
+    });
     return () => {
       alive = false;
     };
@@ -49,19 +60,26 @@ export function useRivePiece(file: string, opts: { fit?: Fit } = {}) {
     buffer
       ? {
           buffer,
-          stateMachines: STATE_MACHINE,
+          artboard,
+          stateMachine: STATE_MACHINE,
           autoplay: true,
           autoBind: true,
           layout: new Layout({ fit, alignment: Alignment.Center }),
           onLoad: () => setStatus('ready'),
-          onLoadError: () => setStatus('error'),
+          onLoadError: () => setStatus('missing'), // artboard not drawn yet
         }
       : null,
   );
 
   useEffect(() => {
-    if (status === 'ready' && rive) setVmi(rive.viewModelInstance ?? null);
-  }, [status, rive]);
+    if (status === 'ready' && rive) {
+      const inst = rive.viewModelInstance ?? null;
+      setVmi(inst);
+      // Debug handle for the verification loop: window.__rive.<file>
+      const w = window as unknown as { __rive?: Record<string, unknown> };
+      (w.__rive ??= {})[file] = { rive, vmi: inst };
+    }
+  }, [status, rive, file]);
 
   // Handles are cached: looking a property up by path every frame is wasteful.
   const api = useMemo(() => {
@@ -96,21 +114,28 @@ export function useRivePiece(file: string, opts: { fit?: Fit } = {}) {
         values.current[path] = `fired ${new Date().toLocaleTimeString()}`;
         get(trigs, path, () => vmi!.trigger(path))?.trigger();
       },
-      /** Subscribe to a property Rive changes (a trigger it fires, a boolean a listener flips). */
-      on(path: string, kind: 'trigger' | 'boolean', cb: (value?: boolean) => void): () => void {
+      /**
+       * Watch a property Rive itself changes (a listener writing into the View
+       * Model). The runtime's own value callbacks do not fire for these, so this
+       * polls the property once per frame and reports real changes.
+       */
+      watch(path: string, kind: 'boolean' | 'number', cb: (value: boolean | number) => void): () => void {
         if (!vmi) return () => {};
-        if (kind === 'trigger') {
-          const h = get(trigs, path, () => vmi.trigger(path));
-          if (!h) return () => {};
-          const fn = () => cb();
-          h.on(fn);
-          return () => h.off(fn);
-        }
-        const h = get(bools, path, () => vmi.boolean(path));
+        const h = kind === 'boolean' ? get(bools, path, () => vmi.boolean(path)) : get(nums, path, () => vmi.number(path));
         if (!h) return () => {};
-        const fn = () => cb(h.value);
-        h.on(fn);
-        return () => h.off(fn);
+        let last = h.value;
+        let raf = 0;
+        const tick = () => {
+          const v = h.value;
+          if (v !== last) {
+            last = v;
+            values.current[path] = v;
+            cb(v);
+          }
+          raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(raf);
       },
     };
   }, [vmi]);

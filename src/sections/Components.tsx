@@ -9,14 +9,17 @@ const SNIPPET = `// Button: React owns the state, Rive draws it
   <RivePiece piece={btn} />
 </button>
 
-// Toggle: Rive owns the click (a listener flips \`on\`), React observes it
-useEffect(() => toggle.on('on', 'boolean', (v) => setDark(v)), [toggle]);
+// Toggle: React owns the input, the state machine owns the motion
+useEffect(() => toggle.set('on', on), [toggle, on]);
+<button role="switch" aria-checked={on} onClick={() => setOn((v) => !v)}>
+  <RivePiece piece={toggle} />
+</button>
 // ...and can still set it from outside
 <input type="checkbox" checked={dark} onChange={(e) => toggle.set('on', e.target.checked)} />
 
-// Loader: a number goes in, a trigger comes back when the finish animation ends
+// Loader: a number goes in, a boolean comes back when the finish animation ends
 loader.set('progress', pct);
-useEffect(() => loader.on('finished', 'trigger', () => setMsg('Rive says: finished')), [loader]);`;
+useEffect(() => loader.watch('done', 'boolean', (v) => v && setMsg('Rive says: finished')), [loader]);`;
 
 export function Components() {
   return (
@@ -85,30 +88,28 @@ function ButtonCard() {
 function ToggleCard() {
   const toggle = useRivePiece('toggle');
   const [on, setOn] = useState(false);
-  // Rive flips `on` when the knob is clicked; React only listens.
-  useEffect(() => toggle.on('on', 'boolean', (v) => setOn(Boolean(v))), [toggle]);
+  useEffect(() => toggle.set('on', on), [toggle, on]);
 
   return (
     <article className="card">
       <header>
         <h3>Toggle</h3>
-        <span className="owner">Rive owns the click</span>
+        <span className="owner">two state machine layers</span>
       </header>
-      <div
+      <button
+        type="button"
+        role="switch"
+        aria-checked={on}
         className="toggle-wrap"
         onPointerEnter={() => toggle.set('hover', true)}
         onPointerLeave={() => toggle.set('hover', false)}
-        onClick={() => {
-          // Only the placeholder needs this; the real file has its own listener.
-          if (toggle.status !== 'ready') {
-            const next = !on;
-            setOn(next);
-            toggle.set('on', next);
-          }
-        }}
+        onClick={() => setOn((v) => !v)}
       >
         <RivePiece piece={toggle} className="toggle-piece" />
-      </div>
+      </button>
+      <p className="muted small">
+        one layer blends off/on, a second layer scales the knob on hover
+      </p>
       <label className="check">
         <input
           type="checkbox"
@@ -130,7 +131,7 @@ function LoaderCard() {
   const [msg, setMsg] = useState('');
   const timer = useRef<number | null>(null);
   useEffect(() => loader.set('progress', pct), [loader, pct]);
-  useEffect(() => loader.on('finished', 'trigger', () => setMsg('Rive says: finished')), [loader]);
+  useEffect(() => loader.watch('done', 'boolean', (v) => v && setMsg('Rive says: finished')), [loader]);
 
   const simulate = () => {
     if (timer.current) window.clearInterval(timer.current);

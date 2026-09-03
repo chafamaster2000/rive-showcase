@@ -12,16 +12,15 @@ interface Props {
 /** Renders the Rive canvas when the file is there, the live placeholder otherwise. */
 export function RivePiece({ piece, compact, className, style }: Props) {
   const { status, RiveComponent } = piece;
-  if (status === 'ready') {
-    return (
-      <div className={`piece ${className ?? ''}`} style={style}>
-        <RiveComponent style={{ width: '100%', height: '100%' }} />
-      </div>
-    );
-  }
+  const ready = status === 'ready';
+  // The canvas is always mounted: the runtime only loads once it has a canvas,
+  // so the placeholder sits on top of it instead of replacing it.
   return (
-    <div className={`piece placeholder ${compact ? 'compact' : ''} ${className ?? ''}`} style={style}>
-      {compact ? <KartGlyph values={piece.values.current} /> : <Panel piece={piece} />}
+    <div className={`piece ${ready ? '' : `placeholder ${compact ? 'compact' : ''}`} ${className ?? ''}`} style={style}>
+      <RiveComponent style={{ width: '100%', height: '100%', opacity: ready ? 1 : 0 }} />
+      {!ready && (
+        <div className="ph-overlay">{compact ? <KartGlyph values={piece.values.current} /> : <Panel piece={piece} />}</div>
+      )}
     </div>
   );
 }

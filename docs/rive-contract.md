@@ -1,30 +1,37 @@
 # Rive contract
 
-Every animated piece on the site is a `.riv` file drawn in the Rive editor and
+Every animated piece on the site is an artboard drawn in the Rive editor and
 driven from React through **data binding** (View Models), which is the current
 Rive API. State machine inputs and Rive Events are deprecated in the runtime, so
 nothing here uses them.
 
-The site ships with a **placeholder** for every piece: a box that shows the
-property values in real time. Drop the real file in `public/rive/<piece>.riv`
-with the names below and the placeholder is replaced on reload. Nothing else
-changes.
+All the artboards live in one file, `public/rive/showcase.riv`, which the page
+downloads and parses once. A piece whose artboard is not in the file yet renders
+a **placeholder** instead: a box showing its property values in real time. Add
+the artboard with the names below, re-export, and the placeholder is replaced on
+reload. Nothing else changes.
 
 ## Rules that apply to every file
 
 | What | Value |
 |---|---|
-| File | `public/rive/<piece>.riv` (lowercase, one artboard per file) |
+| File | `public/rive/showcase.riv` (every artboard in one file) |
 | Artboard | named like the piece, capitalised: `Mascot`, `Button`, `Toggle`, `Loader`, `Kart` |
 | State machine | exactly one, named `SM` |
 | View Model | one, named like the artboard, **set as the artboard's default instance** (the runtime loads it with `autoBind`) |
 | Properties | exact names and types below; numbers are plain floats |
-| Direction React → Rive | numbers, booleans, strings, triggers that React fires |
-| Direction Rive → React | triggers the state machine fires (React subscribes to them) |
+| Direction | React writes numbers, booleans, strings and triggers; the state machine reads them |
 
-In the editor: create the View Model, add the properties, bind them in the
-state machine (conditions, blend inputs, listeners), and pick that View Model as
-the artboard's default with a default instance.
+In the editor: create the View Model, add the properties, bind them in the state
+machine (transition conditions, and data binds with a formula converter for
+anything continuous), and set that View Model as the artboard's default with a
+default instance.
+
+**Editor note.** Artboards created through the Rive MCP in the Early Access
+editor are missing from the runtime export until the file is reopened: the
+editor reports "no stage representation" for them and `export_file` leaves them
+out. Reload the file in the editor after creating an artboard that way, then
+export.
 
 ## `mascot.riv` — the character on the hero
 
@@ -42,7 +49,9 @@ Reacts to cursor, clicks, scroll and the login form next to it.
 | `poke` | trigger | | React | the user clicked on the character |
 | `success` | trigger | | React | login succeeded |
 | `fail` | trigger | | React | login failed |
-| `laughed` | trigger | | **Rive** | fire at the end of the poke reaction; React counts them |
+
+Triggers React fires do reach the state machine. Nothing flows the other way:
+see the note under `toggle.riv`.
 
 ## `button.riv` — a primary button
 
@@ -52,7 +61,7 @@ Reacts to cursor, clicks, scroll and the login form next to it.
 | `hover` | boolean | | React | |
 | `pressed` | boolean | | React | pointer is down |
 | `loading` | boolean | | React | spinner state after click |
-| `done` | trigger | | React | success flourish when loading ends |
+| `done` | boolean | | React | success flourish when loading ends |
 
 Artboard size 220 × 64. The button is not clickable inside Rive: React wraps it
 in a real `<button>` so it stays accessible.
@@ -61,19 +70,25 @@ in a real `<button>` so it stays accessible.
 
 | Property | Type | Range | Set by | Meaning |
 |---|---|---|---|---|
-| `on` | boolean | | **both** | the switch state. A Rive listener on the knob flips it; React also sets it from a checkbox and subscribes to changes |
-| `hover` | boolean | | React | |
+| `on` | boolean | | React | the switch state; one layer blends Off ↔ On from it |
+| `hover` | boolean | | React | a second layer scales the knob |
 
-Artboard size 96 × 48. Put a **pointer listener** in the state machine that
-toggles `on` on click: the point of this piece is that Rive owns the
-interaction and React only observes it.
+Artboard size 96 × 48. React owns the pointer (a real `<button role="switch">`
+wraps the canvas, so the piece stays keyboard accessible); the state machine
+owns the motion, on two independent layers.
+
+**Why input lives in React.** Rive listeners with a `viewModelChange` action are
+authored fine in the Early Access editor and the runtime reports the file *has*
+listeners, but their writes never reach the bound View Model in
+`@rive-app/canvas` 2.42 — click, hover and press were all tested. Values Rive
+would report back have the same problem, so every property here flows one way,
+React → Rive. Retest when the runtime catches up with the editor.
 
 ## `loader.riv` — a progress loader
 
 | Property | Type | Range | Set by | Meaning |
 |---|---|---|---|---|
 | `progress` | number | 0 .. 100 | React | |
-| `finished` | trigger | | **Rive** | fire when the completion animation ends (after `progress` reaches 100); React shows a message |
 
 Artboard size 160 × 160.
 
