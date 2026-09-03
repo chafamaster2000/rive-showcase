@@ -40,10 +40,10 @@ function Panel({ piece }: { piece: RivePieceHandle }) {
   return (
     <div className="ph-panel">
       <div className="ph-head">
-        <span className="ph-file">{piece.file}.riv</span>
+        <span className="ph-file">{piece.file.charAt(0).toUpperCase() + piece.file.slice(1)} artboard</span>
         <span className="ph-status">
           {piece.status === 'loading' && 'loading…'}
-          {piece.status === 'missing' && 'not exported yet · showing the live contract'}
+          {piece.status === 'missing' && 'not drawn yet · showing the live contract'}
           {piece.status === 'error' && 'file found but it failed to load'}
         </span>
       </div>
