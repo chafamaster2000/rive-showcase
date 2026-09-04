@@ -35,7 +35,10 @@ export function Kart() {
 
   const [cells, setCells] = useState<Set<string>>(() => exampleCells());
   const [direction, setDirection] = useState<'ccw' | 'cw'>('ccw');
-  const [running, setRunning] = useState(false);
+  // ?run=1 starts the lap on load, so a link can show it driving
+  const [running, setRunning] = useState(
+    () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('run') === '1',
+  );
   const [speed, setSpeed] = useState<Speed>(1);
   const [showRays, setShowRays] = useState(true);
   const [laps, setLaps] = useState(0);
@@ -101,6 +104,11 @@ export function Kart() {
   const sim = useRef<{ env: SimEnvironment; obs: Float32Array; steer: number; laps: number; acc: number; last: number } | null>(null);
   const driver = useMemo(() => createDriver(TRAINED_GENOME), []);
 
+  // The loop reads these through refs: the piece handles and the settings change
+  // identity on every render, and depending on them would restart the run.
+  const live = useRef({ kart, dash, cells, speed, showRays });
+  live.current = { kart, dash, cells, speed, showRays };
+
   const placeOverlay = useCallback(
     (x: number, y: number, heading: number, m: Mapping, visible: boolean) => {
       const el = overlayRef.current;
@@ -134,6 +142,7 @@ export function Kart() {
     }
   }, [cells, validation, track, running, placeOverlay, kart, dash]);
 
+
   useEffect(() => {
     if (!running || !track) return;
     const env = new SimEnvironment(1, { kind: 'custom', track: track.track }, { wallMode: 'respawn', stagnationKills: false });
@@ -147,7 +156,7 @@ export function Kart() {
       if (!s) return;
       const dt = Math.min(0.1, (now - s.last) / 1000);
       s.last = now;
-      s.acc += dt * speed;
+      s.acc += dt * live.current.speed;
       let steps = 0;
       let action: CarAction = { steer: 0, throttle: 0 };
       let crashed = false;
@@ -171,21 +180,21 @@ export function Kart() {
       const car = s.env.getState().cars[0]!;
       const ctx = canvasRef.current?.getContext('2d');
       if (ctx) {
-        drawGrid(ctx, CANVAS, cells, true);
+        drawGrid(ctx, CANVAS, live.current.cells, true);
         drawTrack(ctx, track.track, track.mapping);
-        const sensed = rays(track.track, car, track.mapping, showRays ? ctx : null);
-        if (kart.status !== 'ready') drawCarMarker(ctx, car, track.mapping);
+        const sensed = rays(track.track, car, track.mapping, live.current.showRays ? ctx : null);
+        if (live.current.kart.status !== 'ready') drawCarMarker(ctx, car, track.mapping);
         s.steer += (action.steer - s.steer) * 0.25;
-        pushPose(kart, dash, car.speed, s.steer, Math.min(...sensed) < 0.2);
+        pushPose(live.current.kart, live.current.dash, car.speed, s.steer, Math.min(...sensed) < 0.2);
       }
       if (crashed) {
-        kart.fire('crash');
-        dash.fire('crash');
+        live.current.kart.fire('crash');
+        live.current.dash.fire('crash');
         setCrashes((n) => n + 1);
       }
       if (lapNow) {
-        kart.fire('lap');
-        dash.fire('lap');
+        live.current.kart.fire('lap');
+        live.current.dash.fire('lap');
         setLaps(s.laps);
       }
       placeOverlay(car.x, car.y, car.heading, track.mapping, true);
@@ -196,7 +205,7 @@ export function Kart() {
       cancelAnimationFrame(raf);
       sim.current = null;
     };
-  }, [running, track, speed, showRays, cells, driver, kart, dash, placeOverlay]);
+  }, [running, track, driver, placeOverlay]);
 
   const reason = validation.valid ? null : validation.reason;
 
