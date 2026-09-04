@@ -10,6 +10,7 @@ import type { CarAction, TrackGeometry } from '../kart/core/contracts.ts';
 import { SimEnvironment } from '../kart/core/environment.ts';
 import { trackFromCells, validateCells, type Cell } from '../kart/core/track/editor.ts';
 import { drawCarMarker, drawGrid, drawTrack, exampleCells, makeMapping, rays, type Mapping } from '../kart/draw.ts';
+import { roadSignals } from '../kart/road.ts';
 
 const CANVAS = 640;
 const MAX_STEPS_PER_FRAME = 12;
@@ -28,9 +29,11 @@ if (laps > lapsBefore) kart.fire('lap');
 overlay.style.transform = \`translate(\${px}px, \${py}px) rotate(\${car.heading}rad)\`;`;
 
 type Speed = 1 | 2 | 4;
+type View = 'map' | 'road';
 
 export function Kart() {
   const kart = useRivePiece('kart', { fit: Fit.Contain });
+  const road = useRivePiece('road', { fit: Fit.Cover });
 
   const [cells, setCells] = useState<Set<string>>(() => exampleCells());
   const [direction, setDirection] = useState<'ccw' | 'cw'>('ccw');
@@ -43,6 +46,12 @@ export function Kart() {
   });
   const [speed, setSpeed] = useState<Speed>(1);
   const [showRays, setShowRays] = useState(true);
+  // ?view=road opens straight into the driver's seat.
+  const [view, setView] = useState<View>(() =>
+    typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('view') === 'road'
+      ? 'road'
+      : 'map',
+  );
   const [laps, setLaps] = useState(0);
   const [crashes, setCrashes] = useState(0);
 
@@ -103,13 +112,21 @@ export function Kart() {
   }, []);
 
   // ---- simulacion + render, fuera de React ------------------------------
-  const sim = useRef<{ env: SimEnvironment; obs: Float32Array; steer: number; laps: number; acc: number; last: number } | null>(null);
+  const sim = useRef<{
+    env: SimEnvironment;
+    obs: Float32Array;
+    steer: number;
+    laps: number;
+    acc: number;
+    last: number;
+    travelled: number;
+  } | null>(null);
   const driver = useMemo(() => createDriver(TRAINED_GENOME), []);
 
   // The loop reads these through refs: the piece handles and the settings change
   // identity on every render, and depending on them would restart the run.
-  const live = useRef({ kart, cells, speed, showRays });
-  live.current = { kart, cells, speed, showRays };
+  const live = useRef({ kart, road, cells, speed, showRays, view });
+  live.current = { kart, road, cells, speed, showRays, view };
 
   const placeOverlay = useCallback(
     (x: number, y: number, heading: number, m: Mapping, visible: boolean) => {
@@ -149,7 +166,7 @@ export function Kart() {
     if (!running || !track) return;
     const env = new SimEnvironment(1, { kind: 'custom', track: track.track }, { wallMode: 'respawn', stagnationKills: false });
     const obs = env.reset(0).data;
-    sim.current = { env, obs, steer: 0, laps: 0, acc: 0, last: performance.now() };
+    sim.current = { env, obs, steer: 0, laps: 0, acc: 0, last: performance.now(), travelled: 0 };
     setLaps(0);
     setCrashes(0);
     let raf = 0;
@@ -180,14 +197,28 @@ export function Kart() {
       if (steps === MAX_STEPS_PER_FRAME) s.acc = 0; // pestaña dormida: no acumular deuda
 
       const car = s.env.getState().cars[0]!;
-      const ctx = canvasRef.current?.getContext('2d');
+      s.steer += (action.steer - s.steer) * 0.25;
+      s.travelled += car.speed * FIXED_DT * steps;
+
+      // Four numbers are all the road artboard needs: it bends, slides and
+      // scrolls itself from them, with no animation in between.
+      const signals = roadSignals(track.track, car, s.travelled);
+      live.current.road.set('curve', signals.curve);
+      live.current.road.set('lateral', signals.lateral);
+      live.current.road.set('phase', signals.phase);
+      live.current.road.set('speed', signals.speed);
+
+      const sensed = rays(track.track, car, track.mapping, null);
+      const scared = Math.min(...sensed) < 0.2;
+      pushPose(live.current.kart, car.speed, s.steer, scared);
+      live.current.road.set('scared', scared);
+
+      const ctx = live.current.view === 'map' ? canvasRef.current?.getContext('2d') : null;
       if (ctx) {
         drawGrid(ctx, CANVAS, live.current.cells, true);
         drawTrack(ctx, track.track, track.mapping);
-        const sensed = rays(track.track, car, track.mapping, live.current.showRays ? ctx : null);
+        rays(track.track, car, track.mapping, live.current.showRays ? ctx : null);
         if (live.current.kart.status !== 'ready') drawCarMarker(ctx, car, track.mapping);
-        s.steer += (action.steer - s.steer) * 0.25;
-        pushPose(live.current.kart, car.speed, s.steer, Math.min(...sensed) < 0.2);
       }
       if (crashed) {
         live.current.kart.fire('crash');
@@ -197,7 +228,7 @@ export function Kart() {
         live.current.kart.fire('lap');
         setLaps(s.laps);
       }
-      placeOverlay(car.x, car.y, car.heading, track.mapping, true);
+      placeOverlay(car.x, car.y, car.heading, track.mapping, live.current.view === 'map');
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
@@ -217,13 +248,15 @@ export function Kart() {
         <a href="https://github.com/chafamaster2000/AutoCheems" target="_blank" rel="noreferrer">
           AutoCheems
         </a>{' '}
-        and running inference only here, reads five distance sensors and its own speed, and drives. Rive draws
-        the car: speed stretches its trail, steering turns the front wheels, and a wall within a fifth of sensor
-        range widens the driver's visor. Every one of those is a View Model property, written each frame.
+        and running inference only here, reads five distance sensors and its own speed, and drives. The map view
+        shows what the network sees. The driver's seat is a Rive artboard with no 3D in it at all: twelve
+        trapezoids whose position comes from one formula each, so the road bends, and whose stripes alternate on
+        a second number, so it scrolls.
       </p>
 
       <div className="kart-grid">
-        <div className="track-wrap" ref={wrapRef}>
+        <div className={`track-wrap ${view === 'road' ? 'in-road' : ''}`} ref={wrapRef}>
+          {view === 'road' && <RivePiece piece={road} className="road-piece" />}
           <canvas
             ref={canvasRef}
             aria-label="A 16 by 16 grid where you paint a closed loop, and the track the car drives"
@@ -253,6 +286,18 @@ export function Kart() {
             <button type="button" className="primary" disabled={!track} onClick={() => setRunning((r) => !r)}>
               {running ? 'Stop' : 'Run'}
             </button>
+            <div className="seg" role="group" aria-label="view">
+              {(
+                [
+                  ['map', 'map'],
+                  ['road', "driver's seat"],
+                ] as Array<[View, string]>
+              ).map(([v, label]) => (
+                <button key={v} type="button" className={view === v ? 'on' : ''} onClick={() => setView(v)}>
+                  {label}
+                </button>
+              ))}
+            </div>
             <div className="seg">
               {([1, 2, 4] as Speed[]).map((s) => (
                 <button key={s} type="button" className={speed === s ? 'on' : ''} onClick={() => setSpeed(s)}>
@@ -260,9 +305,11 @@ export function Kart() {
                 </button>
               ))}
             </div>
-            <label className="check">
-              <input type="checkbox" checked={showRays} onChange={(e) => setShowRays(e.target.checked)} /> sensors
-            </label>
+            {view === 'map' && (
+              <label className="check">
+                <input type="checkbox" checked={showRays} onChange={(e) => setShowRays(e.target.checked)} /> sensors
+              </label>
+            )}
           </div>
 
           <div className="controls">

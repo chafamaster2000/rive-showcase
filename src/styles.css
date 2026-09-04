@@ -127,6 +127,11 @@ footer { max-width: 1080px; margin: 4rem auto 2rem; padding: 0 1.5rem; display: 
 .kart-grid { display: grid; grid-template-columns: minmax(0, 640px) 1fr; gap: 1.5rem; margin-top: 1.2rem; align-items: start; }
 .track-wrap { position: relative; width: 100%; max-width: 640px; }
 .track-wrap canvas { display: block; width: 100%; height: auto; border-radius: 14px; border: 1px solid var(--line); touch-action: none; }
+/* From the driver's seat the road artboard takes the frame and the paint grid
+   steps aside. */
+.track-wrap.in-road { aspect-ratio: 16 / 9; border-radius: 14px; border: 1px solid var(--line); overflow: hidden; }
+.track-wrap.in-road > canvas { display: none; }
+.road-piece { position: absolute; inset: 0; }
 .track-wrap canvas.editing { cursor: crosshair; }
 .kart-overlay { position: absolute; left: 0; top: 0; pointer-events: none; transform-origin: center; display: none; }
 .kart-panel { display: flex; flex-direction: column; gap: 1rem; }

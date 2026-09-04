@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
 """Author a piece of the showcase in the Rive editor, over its MCP.
 
-The editor exports only a file's first artboard, so each piece is built on the
-artboard a new file already has. Usage, with an empty Rive file open:
+The editor exports only a file's **first** artboard, so every piece is built on
+the artboard the file already has, one at a time. And a View Model created this
+way does not reach the export until the file is reopened, even though shapes and
+timelines do. So the loop is, per piece:
 
-    python3 scripts/rive_author.py button       # draw it
-    # reopen the file in the editor: MCP-made objects are not exportable until then
+    python3 scripts/rive_author.py button        # draw it
+    # reopen the file in the editor (Cmd+R): view models need it
     python3 scripts/rive_author.py export public/rive/button.riv
+    python3 scripts/rive_author.py verify public/rive/button.riv hover pressed
+
+`verify` is not optional: an export whose view model is missing still renders,
+it just answers to nobody.
 
 Scale and opacity formulas must produce units (1 + n), not percentages: a data
 bind writes the raw value, so 100 + n lands as a 100x scale.
@@ -116,6 +122,18 @@ def keys(animation_id, frames):
                               "data": {"modifyKeyFrames": {"animationId": animation_id, "add": frames}}})
 
 
+def verify(path, names):
+    """A .riv keeps its view model property names, so a missing one is visible
+    in the bytes. Cheaper than loading the runtime to find out."""
+    data = open(path, 'rb').read()
+    missing = [n for n in names if n.encode() not in data]
+    print('%s  %d bytes' % (path, len(data)))
+    for n in names:
+        print('  %-12s %s' % (n, 'ok' if n.encode() in data else 'MISSING'))
+    if missing:
+        raise SystemExit('reopen the file in the editor and export again')
+
+
 def export(path):
     res = call('export_file', {"format": "riv", "destination": os.path.dirname(os.path.abspath(path)),
                                "inline_base64": True})
@@ -192,6 +210,8 @@ if __name__ == '__main__':
         raise SystemExit(__doc__)
     if sys.argv[1] == 'export':
         export(sys.argv[2])
+    elif sys.argv[1] == 'verify':
+        verify(sys.argv[2], sys.argv[3:])
     elif sys.argv[1] in BUILDERS:
         BUILDERS[sys.argv[1]]()
     else:
