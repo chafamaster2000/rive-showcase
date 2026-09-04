@@ -85,6 +85,8 @@ export function Mascot() {
       <div className="hero-grid">
         <motion.div
           ref={box}
+          role="img"
+          aria-label="A character that follows the cursor and reacts to the form beside it"
           className="mascot-box"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}

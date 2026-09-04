@@ -228,6 +228,8 @@ export function Kart() {
         <div className="track-wrap" ref={wrapRef}>
           <canvas
             ref={canvasRef}
+            aria-label="A 16 by 16 grid where you paint a closed loop, and the track the car drives"
+            role="img"
             width={CANVAS}
             height={CANVAS}
             className={running ? 'running' : 'editing'}
