@@ -27,8 +27,9 @@ machine (transition conditions, and data binds with a formula converter for
 anything continuous), and set that View Model as the artboard's default with a
 default instance.
 
-**Editor notes (Early Access + MCP).** Two things to know when a piece is
-authored through the Rive MCP rather than by hand:
+**Editor notes (Early Access + MCP).** Four things to know when a piece is
+authored through the Rive MCP rather than by hand. `scripts/rive_author.py`
+encodes all of them.
 
 1. `export_file` writes only the file's **first** artboard. A second artboard,
    however it is created, never reaches the `.riv` and the runtime then reports
@@ -43,6 +44,8 @@ authored through the Rive MCP rather than by hand:
    **reopened** in the editor: before that the editor reports "no stage
    representation" for them and the export silently leaves them out. So the
    loop is author → reload the file → export.
+4. The editor cannot open a file over the MCP, and there is no export to disk:
+   it is sandboxed, so the export comes back as base64 and the script writes it.
 
 ## `mascot.riv` — the character on the hero
 
