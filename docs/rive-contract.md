@@ -5,17 +5,17 @@ driven from React through **data binding** (View Models), which is the current
 Rive API. State machine inputs and Rive Events are deprecated in the runtime, so
 nothing here uses them.
 
-All the artboards live in one file, `public/rive/showcase.riv`, which the page
-downloads and parses once. A piece whose artboard is not in the file yet renders
-a **placeholder** instead: a box showing its property values in real time. Add
-the artboard with the names below, re-export, and the placeholder is replaced on
+Each piece is its own Rive file, drawn on that file's **first** artboard, and
+exported to `public/rive/<piece>.riv`. A piece whose file is not there yet
+renders a **placeholder** instead: a box showing its property values in real
+time. Drop the file in with the names below and the placeholder is replaced on
 reload. Nothing else changes.
 
 ## Rules that apply to every file
 
 | What | Value |
 |---|---|
-| File | `public/rive/showcase.riv` (every artboard in one file) |
+| File | `public/rive/<piece>.riv`, one file per piece |
 | Artboard | named like the piece, capitalised: `Mascot`, `Button`, `Toggle`, `Loader`, `Kart` |
 | State machine | exactly one, named `SM` |
 | View Model | one, named like the artboard, **set as the artboard's default instance** (the runtime loads it with `autoBind`) |
@@ -27,11 +27,11 @@ machine (transition conditions, and data binds with a formula converter for
 anything continuous), and set that View Model as the artboard's default with a
 default instance.
 
-**Editor note.** Artboards created through the Rive MCP in the Early Access
-editor are missing from the runtime export until the file is reopened: the
-editor reports "no stage representation" for them and `export_file` leaves them
-out. Reload the file in the editor after creating an artboard that way, then
-export.
+**Editor note.** In the Early Access editor, `export_file` writes only the
+file's original artboard: a second artboard, however it is created, never
+reaches the `.riv` (the runtime then reports "Invalid artboard name"). Hence one
+file per piece. Reopening the file does fix a related problem, where artboards
+created through the MCP have "no stage representation" and cannot be selected.
 
 ## `mascot.riv` — the character on the hero
 

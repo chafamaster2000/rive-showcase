@@ -16,18 +16,20 @@ export type PieceValue = number | boolean | string;
 export type PieceValues = Record<string, PieceValue>;
 
 const STATE_MACHINE = 'SM';
-const FILE = 'showcase.riv';
-
-// One .riv holds every artboard, the way a Rive file is normally organised, so
-// the runtime downloads and parses it once for the whole page. A piece whose
-// artboard is not in the file yet renders its placeholder instead.
-let filePromise: Promise<ArrayBuffer | null> | null = null;
+// One .riv per piece: the Early Access editor only exports a file's first
+// artboard, so each piece is authored in its own Rive file. A piece whose file
+// is not there yet renders its placeholder instead.
+const files = new Map<string, Promise<ArrayBuffer | null>>();
 function loadFile(url: string) {
-  filePromise ??= fetch(url)
-    .then((r) => (r.ok && !r.headers.get('content-type')?.includes('text/html') ? r.arrayBuffer() : null))
-    .then((b) => (b && b.byteLength > 0 ? b : null))
-    .catch(() => null);
-  return filePromise;
+  let p = files.get(url);
+  if (!p) {
+    p = fetch(url)
+      .then((r) => (r.ok && !r.headers.get('content-type')?.includes('text/html') ? r.arrayBuffer() : null))
+      .then((b) => (b && b.byteLength > 0 ? b : null))
+      .catch(() => null);
+    files.set(url, p);
+  }
+  return p;
 }
 
 /**
@@ -36,8 +38,7 @@ function loadFile(url: string) {
  * flow into `values` so the placeholder can render them.
  */
 export function useRivePiece(file: string, opts: { fit?: Fit } = {}) {
-  const url = `${import.meta.env.BASE_URL}rive/${FILE}`;
-  const artboard = file.charAt(0).toUpperCase() + file.slice(1);
+  const url = `${import.meta.env.BASE_URL}rive/${file}.riv`;
   const [buffer, setBuffer] = useState<ArrayBuffer | null>(null);
   const [status, setStatus] = useState<PieceStatus>('loading');
   const [vmi, setVmi] = useState<ViewModelInstance | null>(null);
@@ -60,13 +61,12 @@ export function useRivePiece(file: string, opts: { fit?: Fit } = {}) {
     buffer
       ? {
           buffer,
-          artboard,
           stateMachine: STATE_MACHINE,
           autoplay: true,
           autoBind: true,
           layout: new Layout({ fit, alignment: Alignment.Center }),
           onLoad: () => setStatus('ready'),
-          onLoadError: () => setStatus('missing'), // artboard not drawn yet
+          onLoadError: () => setStatus('error'),
         }
       : null,
   );
