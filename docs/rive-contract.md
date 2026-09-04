@@ -40,17 +40,20 @@ authored through the Rive MCP rather than by hand:
 
 ## `mascot.riv` — the character on the hero
 
-Reacts to cursor, clicks, scroll and the login form next to it.
+Reacts to cursor, clicks, scroll and the login form next to it. `lookX` and
+`lookY` reach the eyes, face and body as data binds with a formula converter,
+not as animations, so the tracking has no blend lag. The rest drives a state
+machine of three layers: idle breathing and blinking, a face layer for typing
+and covered eyes, and a reactions layer for the three triggers.
 
 | Property | Type | Range | Set by | Meaning |
 |---|---|---|---|---|
 | `lookX` | number | -1 .. 1 | React | cursor position relative to the artboard centre, horizontal |
 | `lookY` | number | -1 .. 1 | React | same, vertical (positive = below) |
-| `hover` | boolean | | React | cursor is over something clickable on the page |
 | `typing` | boolean | | React | a text field has focus |
-| `textLength` | number | 0 .. 40 | React | characters typed in the focused field (eyes follow the caret) |
+| `textLength` | number | 0 .. 40 | React | characters typed in the focused field; the pupils dilate with it |
 | `coverEyes` | boolean | | React | the password field has focus |
-| `scroll` | number | 0 .. 1 | React | page scroll progress |
+| `scroll` | number | 0 .. 1 | React | page scroll progress; the shadow shrinks as the page moves |
 | `poke` | trigger | | React | the user clicked on the character |
 | `success` | trigger | | React | login succeeded |
 | `fail` | trigger | | React | login failed |

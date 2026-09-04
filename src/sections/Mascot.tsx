@@ -11,6 +11,8 @@ onPointerMove={(e) => {
   mascot.set('lookX', ((e.clientX - r.left) / r.width) * 2 - 1);
   mascot.set('lookY', ((e.clientY - r.top) / r.height) * 2 - 1);
 }}
+// lookX/lookY drive the eyes, face and body straight through data binds with a
+// formula converter, so there is no animation to blend and no lag.
 <input onFocus={() => mascot.set('typing', true)}
        onChange={(e) => mascot.set('textLength', e.target.value.length)} />
 <input type="password" onFocus={() => mascot.set('coverEyes', true)} />
@@ -60,9 +62,6 @@ export function Mascot() {
     }, 600);
   };
 
-  const hoverOn = () => mascot.set('hover', true);
-  const hoverOff = () => mascot.set('hover', false);
-
   return (
     <section className="hero" onPointerMove={onMove}>
       <div className="hero-grid">
@@ -76,8 +75,6 @@ export function Mascot() {
             mascot.fire('poke');
             setPokes((n) => n + 1);
           }}
-          onPointerEnter={hoverOn}
-          onPointerLeave={hoverOff}
         >
           <RivePiece piece={mascot} />
           {pokes > 0 && <span className="badge">poked {pokes}×</span>}
@@ -123,7 +120,7 @@ export function Mascot() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </label>
-          <button type="submit" onPointerEnter={hoverOn} onPointerLeave={hoverOff} disabled={result === 'busy'}>
+          <button type="submit" disabled={result === 'busy'}>
             {result === 'busy' ? 'Checking…' : 'Sign in'}
           </button>
           <p className={`result ${result}`} aria-live="polite">
