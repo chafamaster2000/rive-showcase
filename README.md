@@ -22,4 +22,4 @@ Stack: Vite, React 19, TypeScript, `@rive-app/react-canvas` with data binding, F
 
 The artboards were built through the Rive editor's automation interface rather than by hand. `docs/rive-contract.md` records what that workflow demands: one Rive file per piece, a file reload before anything authored that way can be exported, and formulas that must produce units rather than percentages.
 
-Still to author: `kart.riv`. `art/workspace.rev` is a backup of the editor document.
+All five artboards are authored, each in turn on the same file's first artboard. `art/workspace.rev` is a backup of the editor document.

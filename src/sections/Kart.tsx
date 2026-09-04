@@ -121,7 +121,7 @@ export function Kart() {
       const [px, py] = m.toPx({ x, y });
       el.style.display = visible ? 'block' : 'none';
       el.style.transform = `translate(${px * ratio}px, ${py * ratio}px) translate(-50%, -50%) rotate(${heading}rad)`;
-      const w = 7.5 * m.scale * ratio;
+      const w = 11 * m.scale * ratio;
       el.style.width = `${w}px`;
       el.style.height = `${w * 0.625}px`;
     },
@@ -217,9 +217,9 @@ export function Kart() {
         <a href="https://github.com/chafamaster2000/AutoCheems" target="_blank" rel="noreferrer">
           AutoCheems
         </a>{' '}
-        and running inference only here, reads five distance sensors and its own speed, and drives. Speed,
-        steering and fear are already going out as View Model properties every frame; the artboard that will
-        draw the car is the next one to be made. Contract view shows the values it will get.
+        and running inference only here, reads five distance sensors and its own speed, and drives. Rive draws
+        the car: speed stretches its trail, steering turns the front wheels, and a wall within a fifth of sensor
+        range widens the driver's visor. Every one of those is a View Model property, written each frame.
       </p>
 
       <div className="kart-grid">
