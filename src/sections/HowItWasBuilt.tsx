@@ -20,17 +20,18 @@ export function HowItWasBuilt() {
         <article>
           <h3>Contract first</h3>
           <p>
-            Every piece starts as a written contract of artboard, View Model and properties, so the page can be built
-            and tested before any art exists. Until a file lands, its card renders a placeholder showing the live
-            values its artboard will receive.
+            Every piece started as a written contract of artboard, View Model and properties, so the page was built
+            and tested before any art existed. A piece whose file is missing renders a value inspector instead, and
+            the control in the header puts every piece into that view, drawn or not.
           </p>
         </article>
         <article>
           <h3>What the runtime taught us</h3>
           <p>
-            Two things worth knowing. Rive listeners that write into a View Model never reach the bound instance in
-            the current web runtime, so all input stays in React and the animation stays in Rive. And the editor
-            exports only a file's first artboard, which is why each piece is its own file.
+            Rive listeners that write into a View Model never reach the bound instance in the current web runtime,
+            so all input stays in React and the animation stays in Rive. The editor exports only a file's first
+            artboard, so all five were built there in turn, each exported before the next replaced it. And a data
+            bind writes raw values while the inspector shows percentages, which costs an hour the first time.
           </p>
         </article>
       </div>
