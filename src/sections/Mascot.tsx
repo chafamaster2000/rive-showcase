@@ -56,13 +56,14 @@ export function Mascot() {
   // The View Model starts at 0, which the percent formula turns into a 100x
   // scale, so the compensated resting value has to be written up front.
   useEffect(() => {
-    mascot.set('textLength', pupilInput(0));
+    mascot.set('textLength', 0, pupilInput(0));
   }, [mascot]);
 
   useEffect(() => {
     const onScroll = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
-      mascot.set('scroll', shadowInput(max > 0 ? clamp(window.scrollY / max, 0, 1) : 0));
+      const progress = max > 0 ? clamp(window.scrollY / max, 0, 1) : 0;
+      mascot.set('scroll', progress, shadowInput(progress));
     };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -120,12 +121,12 @@ export function Mascot() {
               placeholder="you@studio.dev"
               onFocus={() => {
                 mascot.set('typing', true);
-                mascot.set('textLength', pupilInput(email.length));
+                mascot.set('textLength', email.length, pupilInput(email.length));
               }}
               onBlur={() => mascot.set('typing', false)}
               onChange={(e) => {
                 setEmail(e.target.value);
-                mascot.set('textLength', pupilInput(e.target.value.length));
+                mascot.set('textLength', e.target.value.length, pupilInput(e.target.value.length));
               }}
             />
           </label>

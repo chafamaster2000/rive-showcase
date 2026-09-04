@@ -96,8 +96,14 @@ export function useRivePiece(file: string, opts: { fit?: Fit } = {}) {
       return h;
     };
     return {
-      set(path: string, value: PieceValue) {
-        values.current[path] = value;
+      /**
+       * `value` is what the contract says: that is what the inspector shows. A
+       * piece whose file needs a different number (a formula authored in the
+       * wrong unit, say) passes it as `riveValue`, and only Rive sees it.
+       */
+      set(path: string, contractValue: PieceValue, riveValue: PieceValue = contractValue) {
+        values.current[path] = contractValue;
+        const value = riveValue;
         if (!vmi) return;
         if (typeof value === 'number') {
           const h = get(nums, path, () => vmi.number(path));

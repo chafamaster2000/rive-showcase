@@ -30,8 +30,7 @@ overlay.style.transform = \`translate(\${px}px, \${py}px) rotate(\${car.heading}
 type Speed = 1 | 2 | 4;
 
 export function Kart() {
-  const kart = useRivePiece('kart', { fit: Fit.Contain }); // the one on the track
-  const dash = useRivePiece('kart', { fit: Fit.Contain }); // the big one, same file, same values
+  const kart = useRivePiece('kart', { fit: Fit.Contain });
 
   const [cells, setCells] = useState<Set<string>>(() => exampleCells());
   const [direction, setDirection] = useState<'ccw' | 'cw'>('ccw');
@@ -109,8 +108,8 @@ export function Kart() {
 
   // The loop reads these through refs: the piece handles and the settings change
   // identity on every render, and depending on them would restart the run.
-  const live = useRef({ kart, dash, cells, speed, showRays });
-  live.current = { kart, dash, cells, speed, showRays };
+  const live = useRef({ kart, cells, speed, showRays });
+  live.current = { kart, cells, speed, showRays };
 
   const placeOverlay = useCallback(
     (x: number, y: number, heading: number, m: Mapping, visible: boolean) => {
@@ -139,11 +138,11 @@ export function Kart() {
       drawTrack(ctx, track.track, track.mapping);
       const s = track.track.start;
       placeOverlay(s.position.x, s.position.y, s.heading, track.mapping, true);
-      pushPose(kart, dash, 0, 0, false);
+      pushPose(kart, 0, 0, false);
     } else {
       placeOverlay(0, 0, 0, makeMapping(CANVAS, []), false);
     }
-  }, [cells, validation, track, running, placeOverlay, kart, dash]);
+  }, [cells, validation, track, running, placeOverlay, kart]);
 
 
   useEffect(() => {
@@ -188,16 +187,14 @@ export function Kart() {
         const sensed = rays(track.track, car, track.mapping, live.current.showRays ? ctx : null);
         if (live.current.kart.status !== 'ready') drawCarMarker(ctx, car, track.mapping);
         s.steer += (action.steer - s.steer) * 0.25;
-        pushPose(live.current.kart, live.current.dash, car.speed, s.steer, Math.min(...sensed) < 0.2);
+        pushPose(live.current.kart, car.speed, s.steer, Math.min(...sensed) < 0.2);
       }
       if (crashed) {
         live.current.kart.fire('crash');
-        live.current.dash.fire('crash');
         setCrashes((n) => n + 1);
       }
       if (lapNow) {
         live.current.kart.fire('lap');
-        live.current.dash.fire('lap');
         setLaps(s.laps);
       }
       placeOverlay(car.x, car.y, car.heading, track.mapping, true);
@@ -243,7 +240,6 @@ export function Kart() {
 
         <aside className="kart-panel">
           <div className="dash">
-            <RivePiece piece={dash} className="dash-piece" />
             <dl>
               <dt>laps</dt>
               <dd>{laps}</dd>
@@ -308,11 +304,8 @@ function toCells(set: ReadonlySet<string>): Cell[] {
   });
 }
 
-function pushPose(a: RivePieceHandle, b: RivePieceHandle, speed: number, steer: number, scared: boolean) {
-  const v = Math.min(1, speed / 22);
-  for (const p of [a, b]) {
-    p.set('speed', v);
-    p.set('steer', steer);
-    p.set('scared', scared);
-  }
+function pushPose(piece: RivePieceHandle, speed: number, steer: number, scared: boolean) {
+  piece.set('speed', Math.min(1, speed / 22));
+  piece.set('steer', steer);
+  piece.set('scared', scared);
 }

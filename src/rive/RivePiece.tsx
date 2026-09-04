@@ -65,7 +65,7 @@ function Panel({ piece }: { piece: RivePieceHandle }) {
 
 function Value({ v }: { v: number | boolean | string }) {
   if (typeof v === 'number') {
-    const pct = Math.abs(v) <= 1 ? (v + 1) / 2 : Math.min(1, v / 100);
+    const pct = Math.max(0, Math.min(1, Math.abs(v) <= 1 ? (v + 1) / 2 : v / 100));
     return (
       <span className="ph-num">
         <span className="ph-bar">
