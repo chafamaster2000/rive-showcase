@@ -27,11 +27,16 @@ machine (transition conditions, and data binds with a formula converter for
 anything continuous), and set that View Model as the artboard's default with a
 default instance.
 
-**Editor note.** In the Early Access editor, `export_file` writes only the
-file's original artboard: a second artboard, however it is created, never
-reaches the `.riv` (the runtime then reports "Invalid artboard name"). Hence one
-file per piece. Reopening the file does fix a related problem, where artboards
-created through the MCP have "no stage representation" and cannot be selected.
+**Editor notes (Early Access + MCP).** Two things to know when a piece is
+authored through the Rive MCP rather than by hand:
+
+1. `export_file` writes only the file's **first** artboard. A second artboard,
+   however it is created, never reaches the `.riv` and the runtime then reports
+   "Invalid artboard name". Hence one Rive file per piece.
+2. Objects created through the MCP are not exportable until the file is
+   **reopened** in the editor: before that the editor reports "no stage
+   representation" for them and the export silently leaves them out. So the
+   loop is author → reload the file → export.
 
 ## `mascot.riv` — the character on the hero
 
