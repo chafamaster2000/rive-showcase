@@ -36,10 +36,10 @@ export default function App() {
             <div className="lede-block">
               <h1 className="lede">Rive state machines, driven from React.</h1>
               <p className="intro">
-                Three things you can poke: a character that reads your cursor and your keystrokes, a switch whose
-                motion lives entirely in a state machine, and a kart a neural network drives around a track you
-                paint. Two of them are Rive artboards; the rest is the harness that drives them, and the code for
-                each is on the page.
+                Things you can poke: a character that reads your cursor and your keystrokes, three components a
+                product would actually ship, and a kart a neural network drives around a track you paint. The
+                artboards are Rive, every value they react to comes from React, and the code for each is on the
+                page.
               </p>
             </div>
             <Mascot />

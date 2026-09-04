@@ -105,9 +105,11 @@ React → Rive. Retest when the runtime catches up with the editor.
 
 | Property | Type | Range | Set by | Meaning |
 |---|---|---|---|---|
-| `progress` | number | 0 .. 100 | React | |
+| `progress` | number | 0 .. 100 | React | drives a trim path on the ring and the size of the core, through formula converters |
+| `done` | boolean | | React | true at 100: a second layer takes the ring out and pops the core |
 
-Artboard size 160 × 160.
+Artboard size 160 × 160. The ring spins on the base layer; `Progress` is the
+layer that reacts to `done`.
 
 ## `kart.riv` — the driver, seen from above
 

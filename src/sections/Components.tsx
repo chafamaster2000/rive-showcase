@@ -21,9 +21,10 @@ useEffect(() => toggle.set('on', on), [toggle, on]);
 // ...and can still set it from outside
 <input type="checkbox" checked={dark} onChange={(e) => toggle.set('on', e.target.checked)} />
 
-// Loader: a number goes in, a boolean comes back when the finish animation ends
-loader.set('progress', pct);
-useEffect(() => loader.watch('done', 'boolean', (v) => v && setMsg('Rive says: finished')), [loader]);`;
+// Loader: progress drives a trim path on the ring and the size of the core,
+// both through a formula converter, so there is no animation in between
+loader.set('progress', pct);              // 0..100
+loader.set('done', pct >= 100);           // a second layer takes over at the end`;
 
 export function Components() {
   return (
@@ -31,9 +32,9 @@ export function Components() {
       <h2>Production components, not showreel pieces</h2>
       <p className="muted">
         React owns the input and the accessibility, the state machine owns the motion. The switch blends off and
-        on while a second layer scales its knob; the button separates how it feels from what it is doing, so a
-        press still answers while work is in flight. The loader is specified and wired but not drawn yet: switch
-        the header to contract view to see it, and to watch the values every piece receives.
+        on while a second layer scales its knob. The button separates how it feels from what it is doing, so a
+        press still answers while work is in flight. The loader turns one number into a trimmed ring through a
+        formula, with no animation in between. Contract view shows the values each of them is receiving.
       </p>
       <div className="cards">
         <ToggleCard />
@@ -141,7 +142,8 @@ function LoaderCard() {
   const [msg, setMsg] = useState('');
   const timer = useRef<number | null>(null);
   useEffect(() => loader.set('progress', pct), [loader, pct]);
-  useEffect(() => loader.watch('done', 'boolean', (v) => v && setMsg('Rive says: finished')), [loader]);
+  useEffect(() => loader.set('done', pct >= 100), [loader, pct]);
+  useEffect(() => setMsg(pct >= 100 ? 'done' : ''), [pct]);
 
   const simulate = () => {
     if (timer.current) window.clearInterval(timer.current);
@@ -162,7 +164,7 @@ function LoaderCard() {
     <article className="card" hidden={mode === 'art' && loader.status !== 'ready'}>
       <header>
         <h3>Loader</h3>
-        <span className="owner">a number in, a flourish out</span>
+        <span className="owner">one number, a trim path</span>
       </header>
       <RivePiece piece={loader} className="loader-piece" />
       <input type="range" min={0} max={100} value={pct} onChange={(e) => setPct(Number(e.target.value))} />
