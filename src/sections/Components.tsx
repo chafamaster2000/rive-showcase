@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRivePiece } from '../rive/useRivePiece.ts';
+import { useViewMode } from '../rive/ViewMode.tsx';
 import { RivePiece } from '../rive/RivePiece.tsx';
 import { Snippet } from '../Snippet.tsx';
 
@@ -27,11 +28,13 @@ export function Components() {
       <h2>Production components, not showreel pieces</h2>
       <p className="muted">
         React owns the input and the accessibility, the state machine owns the motion. The switch is a Rive
-        file on two layers: one blends off and on, the other scales the knob on hover.
+        file on two layers: one blends off and on, the other scales the knob on hover. Two more components are
+        specified and wired but not drawn yet; switch the header to contract view to see them, and to watch the
+        values every piece is receiving.
       </p>
       <div className="cards">
-        <ButtonCard />
         <ToggleCard />
+        <ButtonCard />
         <LoaderCard />
       </div>
       <Snippet code={SNIPPET} title="how the three components are wired" />
@@ -41,6 +44,7 @@ export function Components() {
 
 function ButtonCard() {
   const btn = useRivePiece('button');
+  const mode = useViewMode();
   const [clicks, setClicks] = useState(0);
   const [loading, setLoading] = useState(false);
   useEffect(() => btn.set('label', loading ? 'Saving' : 'Save changes'), [btn, loading]);
@@ -58,7 +62,7 @@ function ButtonCard() {
   };
 
   return (
-    <article className="card">
+    <article className="card" hidden={mode === 'art' && btn.status !== 'ready'}>
       <header>
         <h3>Button</h3>
         <span className="owner">React owns the state</span>
@@ -127,6 +131,7 @@ function ToggleCard() {
 
 function LoaderCard() {
   const loader = useRivePiece('loader');
+  const mode = useViewMode();
   const [pct, setPct] = useState(0);
   const [msg, setMsg] = useState('');
   const timer = useRef<number | null>(null);
@@ -149,10 +154,10 @@ function LoaderCard() {
   };
 
   return (
-    <article className="card">
+    <article className="card" hidden={mode === 'art' && loader.status !== 'ready'}>
       <header>
         <h3>Loader</h3>
-        <span className="owner">a number in, a trigger out</span>
+        <span className="owner">a number in, a flourish out</span>
       </header>
       <RivePiece piece={loader} className="loader-piece" />
       <input type="range" min={0} max={100} value={pct} onChange={(e) => setPct(Number(e.target.value))} />
