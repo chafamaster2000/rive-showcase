@@ -143,7 +143,7 @@ export function rays(track: TrackGeometry, car: CarPose, m: Mapping, ctx: Canvas
 
 export function drawCarMarker(ctx: CanvasRenderingContext2D, car: CarPose, m: Mapping) {
   const [x, y] = m.toPx({ x: car.x, y: car.y });
-  const s = 2.2 * m.scale;
+  const s = 3.4 * m.scale;
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(car.heading);

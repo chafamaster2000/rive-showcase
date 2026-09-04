@@ -24,17 +24,17 @@ useEffect(() => loader.watch('done', 'boolean', (v) => v && setMsg('Rive says: f
 export function Components() {
   return (
     <section className="components">
-      <h2>The boring parts, done properly</h2>
+      <h2>Production components, not showreel pieces</h2>
       <p className="muted">
-        The switch below is a Rive state machine on two layers, driven by React. The other two are next in
-        line: their cards show the live values their artboards will receive.
+        React owns the input and the accessibility, the state machine owns the motion. The switch is a Rive
+        file on two layers: one blends off and on, the other scales the knob on hover.
       </p>
       <div className="cards">
         <ButtonCard />
         <ToggleCard />
         <LoaderCard />
       </div>
-      <Snippet code={SNIPPET} />
+      <Snippet code={SNIPPET} title="how the three components are wired" />
     </section>
   );
 }

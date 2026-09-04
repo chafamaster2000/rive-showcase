@@ -22,7 +22,7 @@ export function HowItWasBuilt() {
           <p>
             Every piece starts as a written contract of artboard, View Model and properties, so the page can be built
             and tested before any art exists. Until a file lands, its card renders a placeholder showing the live
-            values its artboard will receive. That is why some cards here are still boxes of numbers.
+            values its artboard will receive.
           </p>
         </article>
         <article>

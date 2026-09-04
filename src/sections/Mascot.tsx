@@ -147,7 +147,7 @@ export function Mascot() {
           </p>
         </motion.form>
       </div>
-      <Snippet code={SNIPPET} />
+      <Snippet code={SNIPPET} title="how the character is driven" />
     </section>
   );
 }

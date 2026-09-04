@@ -1,5 +1,6 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import type { PieceValues, RivePieceHandle } from './useRivePiece.ts';
+import { useViewMode } from './ViewMode.tsx';
 
 interface Props {
   piece: RivePieceHandle;
@@ -12,7 +13,8 @@ interface Props {
 /** Renders the Rive canvas when the file is there, the live placeholder otherwise. */
 export function RivePiece({ piece, compact, className, style }: Props) {
   const { status, RiveComponent } = piece;
-  const ready = status === 'ready';
+  const mode = useViewMode();
+  const ready = status === 'ready' && mode === 'art';
   // The canvas is always mounted: the runtime only loads once it has a canvas,
   // so the placeholder sits on top of it instead of replacing it.
   return (
@@ -43,7 +45,8 @@ function Panel({ piece }: { piece: RivePieceHandle }) {
         <span className="ph-file">{piece.file}.riv</span>
         <span className="ph-status">
           {piece.status === 'loading' && 'loading…'}
-          {piece.status === 'missing' && 'not exported yet · showing the live contract'}
+          {piece.status === 'ready' && 'live values from React'}
+          {piece.status === 'missing' && 'live values from React · artboard in progress'}
           {piece.status === 'error' && 'file found but it failed to load'}
         </span>
       </div>

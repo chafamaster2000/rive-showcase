@@ -122,7 +122,7 @@ export function Kart() {
       const [px, py] = m.toPx({ x, y });
       el.style.display = visible ? 'block' : 'none';
       el.style.transform = `translate(${px * ratio}px, ${py * ratio}px) translate(-50%, -50%) rotate(${heading}rad)`;
-      const w = 5 * m.scale * ratio;
+      const w = 7.5 * m.scale * ratio;
       el.style.width = `${w}px`;
       el.style.height = `${w * 0.625}px`;
     },
@@ -216,12 +216,12 @@ export function Kart() {
     <section className="kart">
       <h2>Draw a track. It drives itself.</h2>
       <p className="muted">
-        Paint a closed loop and press run. The driver is a 74-weight neural network trained by neuroevolution in{' '}
+        Paint a closed loop and press run. A 74-weight network, trained by neuroevolution in{' '}
         <a href="https://github.com/chafamaster2000/AutoCheems" target="_blank" rel="noreferrer">
           AutoCheems
-        </a>
-        ; here it only runs inference, in plain TypeScript. It sees five distances and its own speed. Rive draws the
-        kart: speed, steering and the driver's mood are properties on its View Model, updated every frame.
+        </a>{' '}
+        and running inference only here, reads five distance sensors and its own speed, and drives. Rive draws the
+        car: speed, steering and fear are View Model properties, written every frame.
       </p>
 
       <div className="kart-grid">
@@ -294,7 +294,7 @@ export function Kart() {
           </p>
         </aside>
       </div>
-      <Snippet code={SNIPPET} />
+      <Snippet code={SNIPPET} title="how the sim talks to the artboard" />
     </section>
   );
 }
