@@ -1,6 +1,7 @@
 import { Mascot } from './sections/Mascot.tsx';
 import { Components } from './sections/Components.tsx';
 import { Kart } from './sections/Kart.tsx';
+import { HowItWasBuilt } from './sections/HowItWasBuilt.tsx';
 
 const REPO = 'https://github.com/chafamaster2000/rive-showcase';
 const CV = 'https://chafamaster2000.github.io/cv/index-motion.html';
@@ -16,6 +17,7 @@ export default function App() {
         <nav>
           <a href="#components">components</a>
           <a href="#kart">kart</a>
+          <a href="#built">how</a>
           <a href={REPO} target="_blank" rel="noreferrer">
             source
           </a>
@@ -36,6 +38,8 @@ export default function App() {
         <Components />
         <div id="kart" />
         <Kart />
+        <div id="built" />
+        <HowItWasBuilt />
       </main>
 
       <footer>

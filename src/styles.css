@@ -99,6 +99,13 @@ footer { max-width: 1080px; margin: 4rem auto 2rem; padding: 0 1.5rem; display: 
 .check { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--muted); }
 .row { display: flex; align-items: center; gap: 0.8rem; }
 
+/* ---- how it was built ---- */
+.built-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; margin-top: 1.2rem; }
+.built-grid article { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 1.2rem; }
+.built-grid h3 { margin-bottom: 0.5rem; color: var(--accent); font-size: 0.95rem; }
+.built-grid p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+.built-links { margin-top: 1rem; font-family: var(--mono); font-size: 0.85rem; }
+
 /* ---- kart ---- */
 .kart-grid { display: grid; grid-template-columns: minmax(0, 640px) 1fr; gap: 1.5rem; margin-top: 1.2rem; align-items: start; }
 .track-wrap { position: relative; width: 100%; max-width: 640px; }
@@ -121,7 +128,7 @@ footer { max-width: 1080px; margin: 4rem auto 2rem; padding: 0 1.5rem; display: 
 
 @media (max-width: 860px) {
   .hero-grid, .kart-grid { grid-template-columns: 1fr; }
-  .cards { grid-template-columns: 1fr; }
+  .cards, .built-grid { grid-template-columns: 1fr; }
   .top nav { gap: 0.8rem; font-size: 0.9rem; }
 }
 
