@@ -21,17 +21,6 @@ mascot.fire(ok ? 'success' : 'fail');            // React -> Rive trigger
 mascot.set('scroll', scrollProgress);             // 0..1, every scroll event`;
 
 
-/**
- * The two scale binds in `mascot.riv` were authored with percent formulas
- * (`100 + n`), but a data bind writes the raw property, where 1 is 100%. Left
- * alone the pupils cover the whole artboard. Until the file is re-exported with
- * unit formulas, React sends the value that lands on the scale we want.
- *   pupils: 100 + n * 1.4  ->  1 + chars * 0.0125
- *   shadow: 100 - n * 30   ->  1 - scroll * 0.15
- */
-const pupilInput = (chars: number) => (1 + Math.min(chars, 40) * 0.0125 - 100) / 1.4;
-const shadowInput = (scroll: number) => (100 - (1 - 0.15 * scroll)) / 30;
-
 export function Mascot() {
   const mascot = useRivePiece('mascot');
   const box = useRef<HTMLDivElement>(null);
@@ -53,17 +42,10 @@ export function Mascot() {
     [mascot],
   );
 
-  // The View Model starts at 0, which the percent formula turns into a 100x
-  // scale, so the compensated resting value has to be written up front.
-  useEffect(() => {
-    mascot.set('textLength', 0, pupilInput(0));
-  }, [mascot]);
-
   useEffect(() => {
     const onScroll = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = max > 0 ? clamp(window.scrollY / max, 0, 1) : 0;
-      mascot.set('scroll', progress, shadowInput(progress));
+      mascot.set('scroll', max > 0 ? clamp(window.scrollY / max, 0, 1) : 0);
     };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -121,12 +103,12 @@ export function Mascot() {
               placeholder="you@studio.dev"
               onFocus={() => {
                 mascot.set('typing', true);
-                mascot.set('textLength', email.length, pupilInput(email.length));
+                mascot.set('textLength', Math.min(40, email.length));
               }}
               onBlur={() => mascot.set('typing', false)}
               onChange={(e) => {
                 setEmail(e.target.value);
-                mascot.set('textLength', e.target.value.length, pupilInput(e.target.value.length));
+                mascot.set('textLength', Math.min(40, e.target.value.length));
               }}
             />
           </label>

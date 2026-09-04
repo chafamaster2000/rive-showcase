@@ -37,9 +37,8 @@ encodes all of them.
 2. A data bind writes the **raw** property, while the editor's inspector shows
    scale and opacity as percentages. A formula written as `100 + n` therefore
    lands as a 100x scale at runtime, not 100%. Scale formulas must produce
-   units: `1 + n`. `mascot.riv` still carries two percent formulas, and
-   `Mascot.tsx` pre-compensates for them (see `pupilInput`/`shadowInput`);
-   fix the converters and delete that code.
+   units: `1 + n`. Converters and data binds, unlike shapes and timelines, do
+   reach the export without a reload, so this is cheap to correct.
 3. Objects created through the MCP are not exportable until the file is
    **reopened** in the editor: before that the editor reports "no stage
    representation" for them and the export silently leaves them out. So the
