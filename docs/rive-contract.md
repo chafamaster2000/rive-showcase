@@ -73,14 +73,15 @@ see the note under `toggle.riv`.
 
 | Property | Type | Range | Set by | Meaning |
 |---|---|---|---|---|
-| `label` | string | | React | text on the button |
 | `hover` | boolean | | React | |
 | `pressed` | boolean | | React | pointer is down |
 | `loading` | boolean | | React | spinner state after click |
-| `done` | boolean | | React | success flourish when loading ends |
+| `done` | trigger | | React | success flourish when the work ends |
 
-Artboard size 220 × 64. The button is not clickable inside Rive: React wraps it
-in a real `<button>` so it stays accessible.
+Artboard size 220 × 64, on two state machine layers: `Feel` (rest, hover,
+press) and `Work` (rest, loading dots, a done flourish), so a press still reads
+while work is in flight. React wraps the canvas in a real `<button>` and keeps
+the label in the DOM, where a screen reader and a translator can reach it.
 
 ## `toggle.riv` — a switch, two-way
 

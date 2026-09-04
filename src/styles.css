@@ -102,15 +102,17 @@ footer { max-width: 1080px; margin: 4rem auto 2rem; padding: 0 1.5rem; display: 
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 1.2rem; display: flex; flex-direction: column; gap: 0.9rem; }
 .card header { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
 .owner { font-size: 0.75rem; color: var(--muted); font-family: var(--mono); }
-.rive-button { padding: 0; border: none; background: transparent; width: 100%; }
-.button-piece { min-height: 64px; }
+.rive-button { padding: 0; border: none; background: transparent; width: 100%; height: 64px; position: relative; }
+.button-label { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none;
+  color: #1b1b28; font-weight: 600; font-size: 0.95rem; }
+.button-piece { height: 64px; }
 /* The toggle artboard still carries an opaque background from the editor, so
    the chip around it matches that colour and the seam disappears. */
 .toggle-wrap { cursor: pointer; border: none; padding: 0.75rem 1.25rem; align-self: center;
   background: #282828; border-radius: 18px; }
 .toggle-piece { width: 144px; height: 72px; }
 .toggle-wrap:focus-visible { outline: 2px solid var(--mint); outline-offset: 6px; border-radius: 30px; }
-.loader-piece { min-height: 160px; }
+.loader-piece { height: 160px; }
 .check { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--muted); }
 .row { display: flex; align-items: center; gap: 0.8rem; }
 
@@ -129,7 +131,7 @@ footer { max-width: 1080px; margin: 4rem auto 2rem; padding: 0 1.5rem; display: 
 .kart-overlay { position: absolute; left: 0; top: 0; pointer-events: none; transform-origin: center; display: none; }
 .kart-panel { display: flex; flex-direction: column; gap: 1rem; }
 .dash { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 1rem 1.2rem; }
-.dash-piece { min-height: 120px; }
+.dash-piece { height: 120px; }
 .dash dl { margin: 0; display: grid; grid-template-columns: 1fr auto; gap: 0.3rem 1rem; font-family: var(--mono); font-size: 0.9rem; }
 .dash dt { color: var(--muted); }
 .dash dd { margin: 0; color: var(--mint); font-weight: 700; text-align: right; }

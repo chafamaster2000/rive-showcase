@@ -4,9 +4,12 @@ import { useViewMode } from '../rive/ViewMode.tsx';
 import { RivePiece } from '../rive/RivePiece.tsx';
 import { Snippet } from '../Snippet.tsx';
 
-const SNIPPET = `// Button: React owns the state, Rive draws it
-<button onPointerDown={() => btn.set('pressed', true)}
-        onClick={() => { btn.set('loading', true); save().then(() => btn.fire('done')); }}>
+const SNIPPET = `// Button: React owns the state, two state machine layers own the motion
+<button onPointerEnter={() => btn.set('hover', true)}
+        onPointerDown={() => btn.set('pressed', true)}
+        onClick={() => { btn.set('loading', true); save().then(() => {
+          btn.set('loading', false); btn.fire('done');   // dots out, flourish in
+        }); }}>
   <RivePiece piece={btn} />
 </button>
 
@@ -27,10 +30,10 @@ export function Components() {
     <section className="components">
       <h2>Production components, not showreel pieces</h2>
       <p className="muted">
-        React owns the input and the accessibility, the state machine owns the motion. The switch is a Rive
-        file on two layers: one blends off and on, the other scales the knob on hover. Two more components are
-        specified and wired but not drawn yet; switch the header to contract view to see them, and to watch the
-        values every piece is receiving.
+        React owns the input and the accessibility, the state machine owns the motion. The switch blends off and
+        on while a second layer scales its knob; the button separates how it feels from what it is doing, so a
+        press still answers while work is in flight. The loader is specified and wired but not drawn yet: switch
+        the header to contract view to see it, and to watch the values every piece receives.
       </p>
       <div className="cards">
         <ToggleCard />
@@ -47,7 +50,6 @@ function ButtonCard() {
   const mode = useViewMode();
   const [clicks, setClicks] = useState(0);
   const [loading, setLoading] = useState(false);
-  useEffect(() => btn.set('label', loading ? 'Saving' : 'Save changes'), [btn, loading]);
 
   const click = () => {
     if (loading) return;
@@ -65,7 +67,7 @@ function ButtonCard() {
     <article className="card" hidden={mode === 'art' && btn.status !== 'ready'}>
       <header>
         <h3>Button</h3>
-        <span className="owner">React owns the state</span>
+        <span className="owner">two layers: feel and work</span>
       </header>
       <button
         type="button"
@@ -81,9 +83,12 @@ function ButtonCard() {
         aria-busy={loading}
       >
         <RivePiece piece={btn} className="button-piece" />
+        {/* Rive draws the surface; the label stays in the DOM, where a screen
+            reader and a translator can both reach it. */}
+        <span className="button-label">{loading ? 'Saving…' : 'Save changes'}</span>
       </button>
       <p className="muted small">
-        saved {clicks} {clicks === 1 ? 'time' : 'times'} · hover, press, loading and a done flourish
+        saved {clicks} {clicks === 1 ? 'time' : 'times'} · hover and press on one layer, the work on another
       </p>
     </article>
   );
