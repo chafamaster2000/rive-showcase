@@ -37,7 +37,7 @@ export function Components() {
         <ButtonCard />
         <LoaderCard />
       </div>
-      <Snippet code={SNIPPET} title="how the three components are wired" />
+      <Snippet code={SNIPPET} title="how the components are wired" />
     </section>
   );
 }

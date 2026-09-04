@@ -217,8 +217,9 @@ export function Kart() {
         <a href="https://github.com/chafamaster2000/AutoCheems" target="_blank" rel="noreferrer">
           AutoCheems
         </a>{' '}
-        and running inference only here, reads five distance sensors and its own speed, and drives. Rive draws the
-        car: speed, steering and fear are View Model properties, written every frame.
+        and running inference only here, reads five distance sensors and its own speed, and drives. Speed,
+        steering and fear are already going out as View Model properties every frame; the artboard that will
+        draw the car is the next one to be made. Contract view shows the values it will get.
       </p>
 
       <div className="kart-grid">
