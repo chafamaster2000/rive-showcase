@@ -6,10 +6,9 @@ Rive API. State machine inputs and Rive Events are deprecated in the runtime, so
 nothing here uses them.
 
 Each piece is its own Rive file, drawn on that file's **first** artboard, and
-exported to `public/rive/<piece>.riv`. A piece whose file is not there yet
-renders a **placeholder** instead: a box showing its property values in real
-time. Drop the file in with the names below and the placeholder is replaced on
-reload. Nothing else changes.
+exported to `public/rive/<piece>.riv`. All five exist. A piece whose file is
+missing renders a **value inspector** instead, which is also the view the header
+control puts every piece into, drawn or not.
 
 ## Rules that apply to every file
 
@@ -118,10 +117,12 @@ The artboard must point **to the right (+x)** at rest; React rotates it.
 
 | Property | Type | Range | Set by | Meaning |
 |---|---|---|---|---|
-| `speed` | number | 0 .. 1 | React | fraction of top speed (wheels, motion blur, engine shake) |
-| `steer` | number | -1 .. 1 | React | smoothed steering, negative = left |
-| `scared` | boolean | | React | a wall is closer than 20% of sensor range (the driver's face) |
+| `speed` | number | 0 .. 1 | React | stretches and fades the trail behind the car |
+| `steer` | number | -1 .. 1 | React | turns the front wheels and leans the body and helmet |
+| `scared` | boolean | | React | a wall within a fifth of sensor range: the visor widens |
 | `crash` | trigger | | React | the car hit a wall and was reset |
 | `lap` | trigger | | React | a lap was completed |
 
-Artboard size 64 × 40, transparent background.
+Artboard size 64 × 40, transparent background, pointing right at rest. Two
+layers: `Mood` holds calm and scared, `Events` plays the crash and the lap and
+returns on exit time.
