@@ -13,6 +13,8 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
+/* .card sets display, which would otherwise beat the hidden attribute. */
+[hidden] { display: none !important; }
 html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); line-height: 1.5; }
 a { color: var(--mint); text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -96,7 +98,7 @@ footer { max-width: 1080px; margin: 4rem auto 2rem; padding: 0 1.5rem; display: 
 .snippet code { color: var(--text); }
 
 /* ---- components ---- */
-.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; margin-top: 1.2rem; align-items: start; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 340px)); gap: 1.2rem; margin-top: 1.2rem; align-items: start; }
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 1.2rem; display: flex; flex-direction: column; gap: 0.9rem; }
 .card header { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
 .owner { font-size: 0.75rem; color: var(--muted); font-family: var(--mono); }
