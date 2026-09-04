@@ -26,8 +26,8 @@ export function Components() {
     <section className="components">
       <h2>The boring parts, done properly</h2>
       <p className="muted">
-        Three components a product actually ships. Each one is a state machine with a View Model, and the
-        page shows which side owns what.
+        The switch below is a Rive state machine on two layers, driven by React. The other two are next in
+        line: their cards show the live values their artboards will receive.
       </p>
       <div className="cards">
         <ButtonCard />

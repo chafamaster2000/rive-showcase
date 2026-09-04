@@ -35,10 +35,13 @@ export function Kart() {
 
   const [cells, setCells] = useState<Set<string>>(() => exampleCells());
   const [direction, setDirection] = useState<'ccw' | 'cw'>('ccw');
-  // ?run=1 starts the lap on load, so a link can show it driving
-  const [running, setRunning] = useState(
-    () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('run') === '1',
-  );
+  // ?run=1 starts the lap on load, so a link can show it driving. Visitors who
+  // asked their system for less motion get the track, not a moving car.
+  const [running, setRunning] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return false;
+    return new URLSearchParams(window.location.search).get('run') === '1';
+  });
   const [speed, setSpeed] = useState<Speed>(1);
   const [showRays, setShowRays] = useState(true);
   const [laps, setLaps] = useState(0);

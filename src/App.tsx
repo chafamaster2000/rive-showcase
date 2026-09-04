@@ -27,8 +27,9 @@ export default function App() {
 
       <main>
         <p className="intro">
-          Everything that moves on this page is a Rive state machine with a View Model, and every value it shows
-          comes from React. The files are drawn in the Rive editor; the wiring is in the open, under each piece.
+          A character that watches you type, a switch, and a kart driven by a neural network on a track you draw.
+          The animation is authored in Rive and every value it reacts to comes from React. The wiring is in the
+          open, under each piece.
         </p>
         <Mascot />
         <div id="components" />

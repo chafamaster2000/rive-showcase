@@ -9,7 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "test": "vitest run"
   },
   "dependencies": {
     "@rive-app/react-canvas": "^4.34.0",
@@ -25,7 +26,8 @@
     "gh-pages": "^6.3.0",
     "oxlint": "^1.79.0",
     "typescript": "~6.0.2",
-    "vite": "^8.2.2"
+    "vite": "^8.2.2",
+    "vitest": "^4.1.11"
   },
   "homepage": "https://chafamaster2000.github.io/rive-showcase/"
 }
